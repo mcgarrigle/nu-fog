@@ -1,6 +1,10 @@
 # vim: set filetype=yaml :
 
-vm = {
+def ssh-public-key [] {
+  cat ~/.ssh/id_rsa.pub
+}
+
+let vm = {
   guest: "tt"
   image: "rocky10.qcow2"
   os-info: "rocky9"
@@ -16,6 +20,8 @@ vm = {
   ip-address: "192.168.1.24"
   gateway-address: "192.168.1.254"
   dns-server: "1.1.1.1"
-}
 
-# SSH_PUBLIC_KEY="$(cat ${HOME}/.ssh/id_rsa.pub)"
+  user: $env.USER
+  password: "letmein123"
+  ssh-public-key: (ssh-public-key)
+}

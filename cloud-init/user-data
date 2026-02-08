@@ -1,13 +1,13 @@
 #cloud-config
 ssh_pwauth: true
 users:
-  - name: $USER
+  - name: ${USER}
     groups: users
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     ssh_authorized_keys:
-    - $SSH_PUBLIC_KEY
+    - ${SSH_PUBLIC_KEY}
 chpasswd:
   expire: false
   users:
-  - { name: $USER, password: $PASSWORD, type: text }    
+  - { name: ${USER}, password: ${PASSWORD}, type: text }    

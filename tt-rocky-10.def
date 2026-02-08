@@ -1,0 +1,21 @@
+# vim: set filetype=yaml :
+
+vm = {
+  guest: "tt"
+  image: "rocky10.qcow2"
+  os-info: "rocky9"
+  cpus: 2
+  memory: 4096
+
+  pool: "filesystems"
+  root-device: "/dev/sda4"
+  root-size: "10G"
+
+  network: "network=bridge"
+  network-device: "enp1s0"
+  ip-address: "192.168.1.24"
+  gateway-address: "192.168.1.254"
+  dns-server: "1.1.1.1"
+}
+
+# SSH_PUBLIC_KEY="$(cat ${HOME}/.ssh/id_rsa.pub)"

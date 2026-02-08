@@ -1,0 +1,11 @@
+version: 1
+config:
+- type: physical
+  name: ${NETWORK_DEVICE}
+  subnets:
+  - type: static
+    address: ${IP_ADDRESS}
+    gateway: ${GATEWAY_ADDRESS}
+- type: nameserver
+  address:
+  - ${DNS_SERVER}

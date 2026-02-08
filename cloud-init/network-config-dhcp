@@ -1,0 +1,7 @@
+version: 1
+config:
+- name: ${NETWORK_DEVICE}
+  subnets:
+  - type: dhcp
+  type: physical
+- type: nameserver

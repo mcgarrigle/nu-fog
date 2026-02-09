@@ -7,13 +7,14 @@ def ssh-public-key [] {
 let vm = {
   guest: "tt"
   image: "rocky10.qcow2"
-  os-info: "rocky9"
+  osinfo: "rocky9"
   cpus: 2
   memory: 4096
 
+  boot: uefi
   pool: "filesystems"
   root-device: "/dev/sda4"
-  root-size: "10G"
+  root-size: "+10G"
 
   network: "network=bridge"
   network-device: "enp1s0"

@@ -1,0 +1,2 @@
+virsh vol-create-as --pool filesystems --capacity 10               --name tt.qcow2                    
+virsh vol-upload    --pool filesystems --file images/rocky10.qcow2 --vol tt.qcow2

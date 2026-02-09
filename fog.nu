@@ -1,14 +1,11 @@
 #!/usr/bin/env nu
 
-let map = {
-  "${NETWORK}": network
-  "${NETWORK_DEVICE}": network-device
-  "${USER}": user
-  "${PASSWORD}": password
-  "${SSH_PUBLIC_KEY}": ssh-public-key
-  "${IP_ADDRESS}": ip-address
-  "${GATEWAY_ADDRESS}": gateway-address
-  "${DNS_SERVER}": dns-server
+def variable [ s ] {
+  $"\${($s | str screaming-snake-case)}"
+}
+
+def replace-map [] {
+  items { |k,v| [ (variable $k), ($v | into string) ] } | into record
 }
 
 def kv [] {
@@ -17,37 +14,65 @@ def kv [] {
 
 def template [ file ] {
   mut text = open $file 
-  for i in ($map | kv) {
-    $vm | get $i.v | let value
-    $text = $text | str replace --all $i.k $value
+  for i in ($env.map | kv) {
+    $text = $text | str replace --all $i.k $i.v
   }
   $text
 }
 
-def upload [ disk, dest ] {
-  virsh vol-create-as --pool $vm.pool --name $dest --capacity "1m"
-  virsh vol-upload --pool $vm.pool --vol $dest --file $dest
-  virsh vol-list --pool $vm.pool
+def save-template [ file ] {
+  let temp = mktemp --tmpdir
+  template $file | save --force $temp
+  # print ""
+  # print $"// ($file)"
+  # print ""
+  # open $temp | print
+  $temp
 }
 
-def make-root-disk [ source, dest ] {
-  truncate --reference $source --size $"+($vm.root-size)" $dest
-  virt-resize --quiet --expand $vm.root-device $source $dest
-  upload $source $dest
+def upload [ source, dest ] {
+  virsh vol-create-as --pool $env.vm.pool --name $dest --capacity "1m"
+  virsh vol-upload    --pool $env.vm.pool --file $source --vol $dest
+  virsh vol-list      --pool $env.vm.pool
+}
+
+def make-root-disk [ image, dest ] {
+  truncate --reference $image --size $env.vm.root-size $dest
+  virt-resize --quiet --expand $env.vm.root-device $image $dest
+  upload $dest $dest
+  $"vol=($env.vm.pool)/($dest),device=disk"
 }
 
 def make-cloud-init [] {
-  let netw_conf = mktemp --tmpdir --suffix ".network" 
-  let meta_data = mktemp --tmpdir --suffix ".meta"
-  let user_data = mktemp --tmpdir --suffix ".user"
-  template "cloud-init/network-config-static" | save --force $netw_conf
-  template "cloud-init/meta-data"             | save --force $meta_data
-  template "cloud-init/user-data"             | save --force $user_data
-  $"user-data=($user_data),meta-data=($meta_data),network-config=($netw_conf)"
+  let netw = save-template "cloud-init/network-config-static"
+  let meta = save-template "cloud-init/meta-data"
+  let user = save-template "cloud-init/user-data"
+  $"user-data=($user),meta-data=($meta),network-config=($netw)"
+}
+
+def make-guest-domain [] {
+  ( virt-install -v
+    --import
+    --name $env.vm.guest
+    --autostart
+    --virt-type kvm
+    --boot $env.vm.boot
+    --osinfo $env.vm.osinfo
+    --memory $env.vm.memory
+    --vcpus $env.vm.cpus
+    --disk $env.vm.disk
+    --cloud-init $env.vm.cloud-init
+    --network $env.vm.network
+    --graphics none
+    --noautoconsole)
 }
 
 def fog [] {
-  mut vm = collect
-  $vm.disk       = make-root-disk $"images/($vm.image)" $"($vm.guest).qcow2"
-  $vm.cloud-init = make-cloud-init
+  let vm = collect
+  $env.vm = $vm
+  $env.map = $env.vm | replace-map
+  print $env.map
+  $env.vm.disk       = make-root-disk $"images/($vm.image)" $"($vm.guest).qcow2"
+  $env.vm.cloud-init = make-cloud-init
+  make-guest-domain
 }

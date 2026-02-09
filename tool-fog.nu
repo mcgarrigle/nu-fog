@@ -20,7 +20,7 @@ def template [ file ] {
   $text
 }
 
-def save-template [ file ] {
+def template-save [ file ] {
   let temp = mktemp --tmpdir
   template $file | save --force $temp
   # print ""
@@ -43,14 +43,14 @@ def make-root-disk [ image, dest ] {
 }
 
 def make-cloud-init [] {
-  let netw = save-template "cloud-init/network-config-static"
-  let meta = save-template "cloud-init/meta-data"
-  let user = save-template "cloud-init/user-data"
+  let netw = template-save "cloud-init/network-config-static"
+  let meta = template-save "cloud-init/meta-data"
+  let user = template-save "cloud-init/user-data"
   $"user-data=($user),meta-data=($meta),network-config=($netw)"
 }
 
 def make-guest-domain [] {
-  ( virt-install -v
+  ( virt-install
     --import
     --name $env.vm.guest
     --virt-type kvm
@@ -69,32 +69,60 @@ def make-guest-domain [] {
 # -------------------------------------------
 # commands
 
+# list all domains
 export def "fog list" [] {
   virsh list --all
+  | detect columns --guess
+  | rename id name state
 }
 
+# list all domains
 export def "fog ls" [] {
   fog list
 }
 
-export def "fog vols" [ pool = 'filesystems' ] {
+# list all volumes in pool
+export def "fog vols" [
+  pool = 'filesystems'  # pool to list
+] {
   virsh vol-list --pool $pool
+  | detect columns --guess
+  | rename name path
 }
 
-export def "fog info" [ guest ] {
-  virsh dominfo    --domain $guest
-  virsh domblklist --domain $guest
+# get internal data about domain
+export def "fog info" [
+  domain:string  # domain to examine
+] {
+  let dom = virsh dominfo --domain $domain
+  ["name  value\n", $dom]
+  | str join
+  | detect columns --guess
 }
 
-export def "fog rm" [ guest, pool = 'filesystems' ] {
-  virsh destroy $guest
-  virsh undefine --nvram $guest
-  virsh vol-delete --pool $pool --vol $"($guest).qcow2"
+# list disks attached to domain
+export def "fog disks" [
+  domain:string  # domain to examine
+] {
+  virsh domblklist --domain $domain
+  | detect columns --guess
+  | rename target source
 }
 
+# delete, undefine domain and delete volume
+export def "fog rm" [
+  domain:string                # domain to examine
+  pool:string = 'filesystems'  # pool that stores root disk
+] {
+  virsh destroy $domain
+  virsh undefine --nvram $domain
+  virsh vol-delete --pool $pool --vol $"($domain).qcow2"
+}
+
+# consumes record containing domain definition and builds domain
 export def "fog up" [] {
-  let vmdef = collect
-  $env.vm = $vmdef
+  let defn = collect
+  $env.vm = $defn
   $env.map = $env.vm | replace-map
   $env.vm.disk       = make-root-disk $"($env.vm.image)" $"($env.vm.guest).qcow2"
   $env.vm.cloud-init = make-cloud-init

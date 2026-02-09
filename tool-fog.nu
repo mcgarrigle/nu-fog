@@ -9,12 +9,12 @@ def replace-map [] {
 }
 
 def kv [] {
-  items { |k,v| { k:$k, v:$v } }
+  $env.map | items { |k,v| { k:$k, v:$v } }
 }
 
 def template [ file ] {
   mut text = open $file 
-  for i in ($env.map | kv) {
+  for i in (kv) {
     $text = $text | str replace --all $i.k $i.v
   }
   $text
@@ -33,7 +33,6 @@ def save-template [ file ] {
 def upload [ source, dest ] {
   virsh vol-create-as --pool $env.vm.pool --name $dest --capacity "1m"
   virsh vol-upload    --pool $env.vm.pool --file $source --vol $dest
-  virsh vol-list      --pool $env.vm.pool
 }
 
 def make-root-disk [ image, dest ] {
@@ -94,10 +93,10 @@ export def "fog rm" [ guest, pool = 'filesystems' ] {
 }
 
 export def "fog up" [] {
-  let vm = collect
-  $env.vm = $vm
+  let vmdef = collect
+  $env.vm = $vmdef
   $env.map = $env.vm | replace-map
-  $env.vm.disk       = make-root-disk $"images/($vm.image)" $"($vm.guest).qcow2"
+  $env.vm.disk       = make-root-disk $"($env.vm.image)" $"($env.vm.guest).qcow2"
   $env.vm.cloud-init = make-cloud-init
   make-guest-domain
 }

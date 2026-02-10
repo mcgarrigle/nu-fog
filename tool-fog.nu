@@ -4,8 +4,8 @@ def variable [ s ] {
   $"\${($s | str screaming-snake-case)}"
 }
 
-def template-map [] {
-  $env.vm | items {|k,v| [ (variable $k), ($v | into string) ] }
+def template-map [ $vm ] {
+  $vm | items {|k, v| [ (variable $k), ($v | into string) ] }
 }
 
 def template [] {
@@ -38,24 +38,33 @@ def make-cloud-init [] {
   $"user-data=($user),meta-data=($meta),network-config=($netw)"
 }
 
-def make-guest-domain [] {
+def make-domain [ vm ] {
   ( virt-install
     --import
-    --name $env.vm.guest
+    --name $vm.guest
     --virt-type kvm
-    --boot $env.vm.boot
-    --osinfo $env.vm.osinfo
-    --memory $env.vm.memory
-    --vcpus $env.vm.cpus
-    --disk $env.vm.disk
-    --cloud-init $env.vm.cloud-init
-    --network $env.vm.network
+    --boot $vm.boot
+    --osinfo $vm.osinfo
+    --memory $vm.memory
+    --vcpus $vm.cpus
+    --disk $vm.disk
+    --cloud-init $vm.cloud-init
+    --network $vm.network
     --graphics none
     --autostart
     --noautoconsole )
 }
 
 # -------------------------------------------
+
+def make-virtual-machine [ vm:record ] {
+  $env.vars          = template-map $vm
+  $env.vm            = $vm
+  $env.vm.disk       = make-root-disk $"($env.vm.image)" $"($env.vm.guest).qcow2"
+  $env.vm.cloud-init = make-cloud-init
+  make-domain $env.vm
+}
+
 # commands
 
 # list all domains
@@ -110,12 +119,8 @@ export def "fog rm" [
 
 # consumes record containing domain definition and builds domain
 export def "fog up" [] {
-  let defn           = collect | from json
-  $env.vm            = $defn
-  $env.vars          = template-map
-  $env.vm.disk       = make-root-disk $"($env.vm.image)" $"($env.vm.guest).qcow2"
-  $env.vm.cloud-init = make-cloud-init
-  make-guest-domain
+  let vm = collect | from json
+  make-virtual-machine $vm
 }
 
 export def fog [] {

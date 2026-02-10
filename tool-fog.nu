@@ -19,22 +19,24 @@ def template-save [ file ] {
   $temp
 }
 
-def upload [ source, dest ] {
-  virsh vol-create-as --pool $env.vm.pool --name $dest --capacity "1m"
-  virsh vol-upload    --pool $env.vm.pool --file $source --vol $dest
+def upload [ pool, volume ] {
+  virsh vol-create-as --pool $pool --name $volume --capacity "1m"
+  virsh vol-upload    --pool $pool --file $volume --vol $volume
 }
 
-def make-root-disk [ image, dest ] {
-  truncate --reference $image --size $env.vm.root-size $dest
-  virt-resize --quiet --expand $env.vm.root-device $image $dest
-  upload $dest $dest
-  $"device=disk,vol=($env.vm.pool)/($dest)"
+def make-root-disk [ vm ] {
+  let volume = $"($vm.guest).qcow2"
+  truncate --reference $vm.image --size $vm.root-size $volume
+  virt-resize --quiet --expand $vm.root-device $vm.image $volume
+  upload $vm.pool $volume
+  $"device=disk,vol=($vm.pool)/($volume)"
 }
 
-def make-cloud-init [] {
-  let user = template-save "cloud-init/user-data"
-  let meta = template-save "cloud-init/meta-data"
-  let netw = template-save "cloud-init/network-config-static"
+def make-cloud-init [ vm ] {
+  $env.vars = template-map $vm
+  let user  = template-save "cloud-init/user-data"
+  let meta  = template-save "cloud-init/meta-data"
+  let netw  = template-save "cloud-init/network-config-static"
   $"user-data=($user),meta-data=($meta),network-config=($netw)"
 }
 
@@ -58,10 +60,9 @@ def make-domain [ vm ] {
 # -------------------------------------------
 
 def make-virtual-machine [ vm:record ] {
-  $env.vars          = template-map $vm
   $env.vm            = $vm
-  $env.vm.disk       = make-root-disk $"($env.vm.image)" $"($env.vm.guest).qcow2"
-  $env.vm.cloud-init = make-cloud-init
+  $env.vm.disk       = make-root-disk $vm
+  $env.vm.cloud-init = make-cloud-init $vm
   make-domain $env.vm
 }
 
@@ -117,10 +118,11 @@ export def "fog rm" [
   virsh vol-delete --pool $pool --vol $"($domain).qcow2"
 }
 
-# consumes record containing domain definition and builds domain
+# consumes JSON object containing domain definition and builds domain
 export def "fog up" [] {
-  let vm = collect | from json
+  mut vm = collect | from json
   make-virtual-machine $vm
+  ignore
 }
 
 export def fog [] {

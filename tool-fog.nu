@@ -4,16 +4,16 @@ def variable [ s ] {
   $"\${($s | str screaming-snake-case)}"
 }
 
-def replace-map [] {
-  items { |k,v| [ (variable $k), ($v | into string) ] } | into record
-}
-
 def kv [] {
-  $env.map | items { |k,v| { k:$k, v:$v } }
+  $env.map | items {|k,v| { k:$k, v:$v } }
 }
 
-def template [ file ] {
-  mut text = open $file 
+def template-map [] {
+  items {|k,v| [ (variable $k), ($v | into string) ] } | into record
+}
+
+def template [] {
+  mut text = collect
   for i in (kv) {
     $text = $text | str replace --all $i.k $i.v
   }
@@ -22,11 +22,7 @@ def template [ file ] {
 
 def template-save [ file ] {
   let temp = mktemp --tmpdir
-  template $file | save --force $temp
-  # print ""
-  # print $"// ($file)"
-  # print ""
-  # open $temp | print
+  open $file | template | save --force $temp
   $temp
 }
 
@@ -43,9 +39,9 @@ def make-root-disk [ image, dest ] {
 }
 
 def make-cloud-init [] {
-  let netw = template-save "cloud-init/network-config-static"
-  let meta = template-save "cloud-init/meta-data"
   let user = template-save "cloud-init/user-data"
+  let meta = template-save "cloud-init/meta-data"
+  let netw = template-save "cloud-init/network-config-static"
   $"user-data=($user),meta-data=($meta),network-config=($netw)"
 }
 
@@ -114,16 +110,16 @@ export def "fog rm" [
   domain:string                # domain to examine
   pool:string = 'filesystems'  # pool that stores root disk
 ] {
-  virsh destroy $domain
+  try { virsh destroy $domain }
   virsh undefine --nvram $domain
   virsh vol-delete --pool $pool --vol $"($domain).qcow2"
 }
 
 # consumes record containing domain definition and builds domain
 export def "fog up" [] {
-  let defn = collect
+  let defn = collect | from json
   $env.vm = $defn
-  $env.map = $env.vm | replace-map
+  $env.map = $env.vm | template-map
   $env.vm.disk       = make-root-disk $"($env.vm.image)" $"($env.vm.guest).qcow2"
   $env.vm.cloud-init = make-cloud-init
   make-guest-domain

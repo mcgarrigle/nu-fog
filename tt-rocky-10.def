@@ -1,3 +1,5 @@
+#!/usr/bin/env nu
+
 # vim: set filetype=yaml :
 
 def ssh-public-key [] {
@@ -26,3 +28,5 @@ let vm = {
   password: "letmein123"
   ssh-public-key: (ssh-public-key)
 }
+
+$vm | to json

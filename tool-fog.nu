@@ -4,20 +4,13 @@ def variable [ s ] {
   $"\${($s | str screaming-snake-case)}"
 }
 
-def kv [] {
-  $env.map | items {|k,v| { k:$k, v:$v } }
-}
-
 def template-map [] {
-  items {|k,v| [ (variable $k), ($v | into string) ] } | into record
+  $env.vm | items {|k,v| [ (variable $k), ($v | into string) ] }
 }
 
 def template [] {
   mut text = collect
-  for i in (kv) {
-    $text = $text | str replace --all $i.k $i.v
-  }
-  $text
+  $env.vars | reduce --fold $text {|v, t| $t | str replace --all $v.0 $v.1}
 }
 
 def template-save [ file ] {
@@ -111,15 +104,15 @@ export def "fog rm" [
   pool:string = 'filesystems'  # pool that stores root disk
 ] {
   try { virsh destroy $domain }
-  virsh undefine --nvram $domain
+  try { virsh undefine --nvram $domain }
   virsh vol-delete --pool $pool --vol $"($domain).qcow2"
 }
 
 # consumes record containing domain definition and builds domain
 export def "fog up" [] {
-  let defn = collect | from json
-  $env.vm = $defn
-  $env.map = $env.vm | template-map
+  let defn           = collect | from json
+  $env.vm            = $defn
+  $env.vars          = template-map
   $env.vm.disk       = make-root-disk $"($env.vm.image)" $"($env.vm.guest).qcow2"
   $env.vm.cloud-init = make-cloud-init
   make-guest-domain

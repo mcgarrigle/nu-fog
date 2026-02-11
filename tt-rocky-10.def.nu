@@ -4,8 +4,8 @@
 
 #source ~/.config/nushell/env.nu
 
-use libvirt.nu *
-use tool-fog.nu *
+use hypervisor.nu *
+use fog.nu *
 
 hypervisor import
 

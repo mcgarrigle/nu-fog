@@ -125,6 +125,6 @@ export def "fog up" [] {
   ignore
 }
 
-export def fog [] {
+export def main [] {
   ignore
 }

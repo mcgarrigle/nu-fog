@@ -2,12 +2,11 @@
 
 # vim: set filetype=yaml :
 
-#source ~/.config/nushell/env.nu
-
+use utilities.nu *
 use hypervisor.nu *
 use fog.nu *
 
-hypervisor import
+import hypervisors
 
 hypervisor use local
 

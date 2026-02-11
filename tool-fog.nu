@@ -59,11 +59,12 @@ def make-domain [ vm ] {
 
 # -------------------------------------------
 
-def make-virtual-machine [ vm:record ] {
-  $env.vm            = $vm
-  $env.vm.disk       = make-root-disk $vm
-  $env.vm.cloud-init = make-cloud-init $vm
-  make-domain $env.vm
+def make-virtual-machine [] {
+  mut vm = collect
+  print $"building ($vm.guest)\n"
+  $vm.disk       = make-root-disk $vm
+  $vm.cloud-init = make-cloud-init $vm
+  make-domain $vm
 }
 
 # commands
@@ -120,9 +121,7 @@ export def "fog rm" [
 
 # consumes record containing domain definition and builds domain
 export def "fog up" [] {
-  mut vm = collect
-  print $"building ($vm.guest)\n"
-  make-virtual-machine $vm
+  make-virtual-machine
   ignore
 }
 

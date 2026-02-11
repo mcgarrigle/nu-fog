@@ -19,7 +19,7 @@ def template-save [ file ] {
   $temp
 }
 
-def upload [ pool, volume ] {
+def upload [ volume, pool ] {
   virsh vol-create-as --pool $pool --name $volume --capacity "1m"
   virsh vol-upload    --pool $pool --file $volume --vol $volume
 }
@@ -28,7 +28,7 @@ def make-root-disk [ vm ] {
   let volume = $"($vm.guest).qcow2"
   truncate --reference $vm.image --size $vm.root-size $volume
   virt-resize --quiet --expand $vm.root-device $vm.image $volume
-  upload $vm.pool $volume
+  upload $volume $vm.pool
   $"device=disk,vol=($vm.pool)/($volume)"
 }
 
@@ -118,9 +118,10 @@ export def "fog rm" [
   virsh vol-delete --pool $pool --vol $"($domain).qcow2"
 }
 
-# consumes JSON object containing domain definition and builds domain
+# consumes record containing domain definition and builds domain
 export def "fog up" [] {
-  mut vm = collect | from json
+  mut vm = collect
+  print $"building ($vm.guest)\n"
   make-virtual-machine $vm
   ignore
 }

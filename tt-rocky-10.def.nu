@@ -2,9 +2,20 @@
 
 # vim: set filetype=yaml :
 
+#source ~/.config/nushell/env.nu
+
+use libvirt.nu *
+use tool-fog.nu *
+
+hypervisor import
+
+hypervisor use local
+
+
 def ssh-public-key [] {
   cat ~/.ssh/id_rsa.pub
 }
+
 
 let vm = {
   guest: "tt"
@@ -29,4 +40,4 @@ let vm = {
   ssh-public-key: (ssh-public-key)
 }
 
-$vm | to json
+$vm | fog up

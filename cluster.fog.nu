@@ -25,6 +25,7 @@ let vm = {
 
   network: "network=bridge"
   network-device: enp1s0
+  bootproto: static
   ip-address: 192.168.1.20
   gateway-address: 192.168.1.254
   dns-server: 1.1.1.1
@@ -40,8 +41,6 @@ let hosts = [
   { guest: t3, ip-address: 192.168.1.23 }
 ]
   
-# $vm | fog up
-
 $hosts | each {|host| $vm | merge $host | fog up }
 
 ignore

@@ -36,7 +36,7 @@ def make-cloud-init [ vm ] {
   $env.vars = template-map $vm
   let user  = template-save "cloud-init/user-data"
   let meta  = template-save "cloud-init/meta-data"
-  let netw  = template-save "cloud-init/network-config-static"
+  let netw  = template-save $"cloud-init/network-config-($vm.bootproto)"
   $"user-data=($user),meta-data=($meta),network-config=($netw)"
 }
 

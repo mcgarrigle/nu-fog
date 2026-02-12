@@ -94,10 +94,12 @@ export def "fog vols" [
 export def "fog info" [
   domain:string  # domain to examine
 ] {
-  let dom = virsh dominfo --domain $domain
-  ["name  value\n", $dom]
-  | str join
-  | detect columns --guess
+  virsh dominfo tt
+  | lines
+  | split column ':'
+  | rename name value
+  | compact value
+  | str trim value
 }
 
 # list disks attached to domain

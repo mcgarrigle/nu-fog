@@ -65,24 +65,32 @@ def make-virtual-machine [] {
   make-domain $vm
 }
 
-# -------------------------------------------
+def domains [] {
+  domain-list | each {|i| $i.name }
+}
 
-# commands
-
-# list all domains
-export def "fog list" [] {
+def domain-list [] {
   virsh list --all
   | detect columns --ignore-box-chars
   | rename id name state
 }
 
+# -------------------------------------------
+
+# commands
+
 # list all domains
-export def "fog ls" [] {
-  fog list
+export def  list [] {
+  domain-list
+}
+
+# list all domains
+export def ls [] {
+  domain-list
 }
 
 # list all volumes in pool
-export def "fog vols" [
+export def vols [
   pool = 'filesystems'  # pool to list
 ] {
   virsh vol-list --pool $pool
@@ -91,8 +99,8 @@ export def "fog vols" [
 }
 
 # get internal data about domain
-export def "fog info" [
-  domain:string  # domain to examine
+export def info [
+  domain: string@domains  # domain to examine
 ] {
   virsh dominfo --domain $domain
   | lines
@@ -103,18 +111,18 @@ export def "fog info" [
 }
 
 # list disks attached to domain
-export def "fog disks" [
-  domain:string  # domain to examine
+export def disks [
+  domain: string@domains  # domain to examine
 ] {
   virsh domblklist --domain $domain
-  | detect columns --guess
+  | detect columns --ignore-box-chars
   | rename target source
 }
 
 # delete, undefine domain and delete volume
-export def "fog rm" [
-  domain:string                # domain to examine
-  pool:string = 'filesystems'  # pool that stores root disk
+export def rm [
+  domain: string@domains        # domain to examine
+  pool: string = 'filesystems'  # pool that stores root disk
 ] {
   try { virsh destroy $domain }
   try { virsh undefine --nvram $domain }
@@ -122,7 +130,7 @@ export def "fog rm" [
 }
 
 # consumes record containing domain definition and builds domain
-export def "fog up" [] {
+export def up [] {
   make-virtual-machine
   ignore
 }

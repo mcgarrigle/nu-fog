@@ -4,7 +4,7 @@
 
 use utilities.nu *
 use hypervisor.nu *
-use fog.nu *
+use fog.nu
 
 import hypervisors
 

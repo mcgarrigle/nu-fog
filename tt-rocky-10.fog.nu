@@ -2,7 +2,7 @@
 
 # vim: set filetype=yaml :
 
-use fog.nu *
+use fog.nu
 
 let vm = {
   guest: tt

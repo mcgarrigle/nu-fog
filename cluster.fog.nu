@@ -3,10 +3,10 @@
 # vim: set filetype=yaml :
 
 use utilities.nu *
-use hypervisor.nu *
+use hypervisor.nu
 use fog.nu
 
-import hypervisors
+import HYPERVISORS
 
 hypervisor use local
 

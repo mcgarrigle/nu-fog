@@ -91,7 +91,7 @@ export def ls [] {
 
 # list all volumes in pool
 export def vols [
-  pool = 'filesystems'  # pool to list
+  --pool = 'filesystems'  # pool to list
 ] {
   virsh vol-list --pool $pool
   | detect columns --ignore-box-chars
@@ -121,8 +121,8 @@ export def disks [
 
 # delete, undefine domain and delete volume
 export def rm [
-  domain: string@domains        # domain to examine
-  pool: string = 'filesystems'  # pool that stores root disk
+  domain: string@domains          # domain to examine
+  --pool: string = 'filesystems'  # pool that stores root disk
 ] {
   try { virsh destroy $domain }
   try { virsh undefine --nvram $domain }

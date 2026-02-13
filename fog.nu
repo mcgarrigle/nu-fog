@@ -57,8 +57,6 @@ def make-domain [ vm ] {
     --noautoconsole )
 }
 
-# -------------------------------------------
-
 def make-virtual-machine [] {
   mut vm = collect
   print $"building ($vm.guest)\n"
@@ -67,12 +65,14 @@ def make-virtual-machine [] {
   make-domain $vm
 }
 
+# -------------------------------------------
+
 # commands
 
 # list all domains
 export def "fog list" [] {
   virsh list --all
-  | detect columns --guess
+  | detect columns --ignore-box-chars
   | rename id name state
 }
 
@@ -86,7 +86,7 @@ export def "fog vols" [
   pool = 'filesystems'  # pool to list
 ] {
   virsh vol-list --pool $pool
-  | detect columns --guess
+  | detect columns --ignore-box-chars
   | rename name path
 }
 
@@ -94,12 +94,12 @@ export def "fog vols" [
 export def "fog info" [
   domain:string  # domain to examine
 ] {
-  virsh dominfo tt
+  virsh dominfo --domain $domain
   | lines
+  | compact --empty
   | split column ':'
+  | str trim
   | rename name value
-  | compact value
-  | str trim value
 }
 
 # list disks attached to domain

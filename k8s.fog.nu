@@ -1,12 +1,10 @@
 #!/usr/bin/env nu
-
 # vim: set filetype=yaml :
 
-use utilities.nu *
 use hypervisor.nu
 use fog.nu
 
-import HYPERVISORS
+source $nu.env-path
 
 hypervisor use local
 
@@ -34,7 +32,6 @@ let base = {
   password: letmein123
   ssh-public-key: (cat ~/.ssh/id_rsa.pub)
 }
-
 
 let nodes = [
   { guest: k8s1.mac.wales, ip-address: 192.168.1.41 }

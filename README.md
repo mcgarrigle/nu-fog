@@ -55,3 +55,11 @@ Guest Definition Variables
 | user            | Username to inject into VM |
 | password        | Password for ${USER}   |
 | ssh-public_key  | SSH public key to inject into ${USER} |
+
+The root-size key is an integer and optional unit.  Units are K,M,G,T,P,E,Z,Y
+(powers of 1024) or KB,MB,... (powers of 1000). Binary suffixes can be used,
+too: KiB=K, MiB=M, and so on.
+
+root-size may also be prefixed by one of the following modifying characters:
+'+' extend by, '-' reduce by, '<' at most, '>' at least, '/' round down to
+multiple of, '%' round up to multiple of.

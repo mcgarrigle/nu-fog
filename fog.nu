@@ -80,7 +80,7 @@ def domain-list [] {
 # commands
 
 # list all domains
-export def  list [] {
+export def list [] {
   domain-list
 }
 

@@ -31,6 +31,7 @@ let base = {
   user: $env.USER
   password: letmein123
   ssh-public-key: (cat ~/.ssh/id_rsa.pub)
+  ssh-user-ca-key: (cat ../ssh_hush/ca/user_ca_key.pub)
 }
 
 let nodes = [

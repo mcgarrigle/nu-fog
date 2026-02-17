@@ -29,6 +29,7 @@ def make-root-disk [ vm ] {
   truncate --reference $vm.image --size $vm.root-size $volume
   virt-resize --quiet --expand $vm.root-device $vm.image $volume
   upload $volume $vm.pool
+  rm --force $volume
   $"device=disk,vol=($vm.pool)/($volume)"
 }
 
@@ -120,7 +121,7 @@ export def disks [
 }
 
 # delete, undefine domain and delete volume
-export def rm [
+export def del [
   domain: string@domains          # domain to examine
   --pool: string = 'filesystems'  # pool that stores root disk
 ] {

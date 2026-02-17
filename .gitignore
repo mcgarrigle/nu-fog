@@ -1,3 +1,4 @@
 *.img
 *.qcow
 *.qcow2
+*.pub

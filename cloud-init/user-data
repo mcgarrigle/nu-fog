@@ -11,3 +11,15 @@ chpasswd:
   expire: false
   users:
   - { name: ${USER}, password: ${PASSWORD}, type: text }    
+
+# configure SSH certificates
+
+write_files:
+- path: /etc/ssh/sshd_config.d/10-ssh-certs.conf
+  content: "TrustedUserCAKeys /etc/ssh/user_ca_key.pub"
+  owner: root:root
+  permissions: '0644'
+- path: /etc/ssh/user_ca_key.pub
+  content: "${SSH_USER_CA_KEY}"
+  owner: root:root
+  permissions: '0644'

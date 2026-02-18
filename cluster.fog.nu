@@ -2,14 +2,7 @@
 
 # vim: set filetype=yaml :
 
-use utilities.nu *
-use hypervisor.nu
 use fog.nu
-
-import HYPERVISORS
-
-hypervisor use local
-
 
 let vm = {
   guest: tt

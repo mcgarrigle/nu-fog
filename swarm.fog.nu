@@ -2,9 +2,12 @@
 
 # vim: set filetype=yaml :
 
+source $nu.env-path
+
+use hypervisor.nu
 use fog.nu
 
-let vm = {
+let base = {
   guest: tt
   image: rocky10.qcow2
   osinfo: rocky9
@@ -29,12 +32,17 @@ let vm = {
   ssh-ca-user-key: (cat ./keys/ssh_ca_user_key.pub)
 }
 
-let hosts = [
-  { guest: t1, ip-address: 192.168.1.21 }
-  { guest: t2, ip-address: 192.168.1.22 }
-  { guest: t3, ip-address: 192.168.1.23 }
+def build [ node ] {
+  hypervisor use $node.host
+  $base | merge $node | fog up
+}
+
+let nodes = [
+  { guest: node1.mac.wales, ip-address: 192.168.1.21, host: dwt  }
+  { guest: node2.mac.wales, ip-address: 192.168.1.22, host: smol }
+  { guest: node3.mac.wales, ip-address: 192.168.1.23, host: wee  }
 ]
   
-$hosts | each {|host| $vm | merge $host | fog up }
+$nodes | each {|node| build $node }
 
 ignore

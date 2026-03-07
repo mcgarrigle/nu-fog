@@ -76,18 +76,40 @@ def domain-list [] {
   | rename id name state
 }
 
-# -------------------------------------------
+def domain-list-host [ hypervisor ] {
+  $env.LIBVIRT_DEFAULT_URI = $hypervisor.uri
+  domain-list
+  | insert host $hypervisor.name
+  | insert uri $hypervisor.uri
+}
 
+def domain-list-cluster [] {
+  cluster
+  | each {|hypervisor| domain-list-host $hypervisor }
+  | flatten
+  | sort-by name
+}
+
+# -------------------------------------------
 # commands
 
 # list all domains
-export def list [] {
-  domain-list
+export def list [ --cluster ] {
+  if $cluster {
+    domain-list-cluster | reject uri
+  } else {
+    domain-list
+  }
 }
 
 # list all domains
 export def ls [] {
   domain-list
+}
+
+# list cluster hosts
+export def cluster [] {
+  $env.HYPERVISORS | where uri !~ '^qemu://'
 }
 
 # list all volumes in pool

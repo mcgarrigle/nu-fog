@@ -6,7 +6,7 @@ use fog.nu
 
 let vm = {
   guest: tt
-  image: rocky10.qcow2
+  image: rocky10.1.qcow2
   osinfo: rocky9
   cpus: 2
   memory: 4096

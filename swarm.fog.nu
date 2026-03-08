@@ -7,30 +7,9 @@ source $nu.env-path
 use hypervisor.nu
 use fog.nu
 
-let base = {
-  guest: tt
-  image: rocky10.qcow2
-  osinfo: rocky9
-  cpus: 2
-  memory: 4096
+# get base VM definition
 
-  boot: uefi
-  pool: filesystems
-  root-device: /dev/sda4
-  root-size: "+10G"
-
-  network: "network=bridge"
-  network-device: enp1s0
-  bootproto: static
-  ip-address: 192.168.1.20
-  gateway-address: 192.168.1.254
-  dns-server: 1.1.1.1
-
-  user: $env.USER
-  password: letmein123
-  ssh-public-key: (cat ~/.ssh/id_rsa.pub)
-  ssh-ca-user-key: (cat ./keys/ssh_ca_user_key.pub)
-}
+source base.nu
 
 def build [ node ] {
   hypervisor use $node.host

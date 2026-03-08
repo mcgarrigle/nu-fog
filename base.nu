@@ -1,10 +1,6 @@
 #!/usr/bin/env nu
 
-# vim: set filetype=yaml :
-
-use fog.nu
-
-let vm = {
+let base = {
   guest: tt
   image: "rocky-10.1.qcow2"
   osinfo: rocky9
@@ -28,5 +24,3 @@ let vm = {
   ssh-public-key: (cat ~/.ssh/id_rsa.pub)
   ssh-ca-user-key: (cat ./keys/ssh_ca_user_key.pub)
 }
-
-$vm | fog up

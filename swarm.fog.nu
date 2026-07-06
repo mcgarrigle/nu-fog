@@ -22,9 +22,9 @@ def delete [ node ] {
 }
 
 let nodes = [
-  { guest: node1.mac.wales, ip-address: 192.168.1.21, host: dwt  }
-  { guest: node2.mac.wales, ip-address: 192.168.1.22, host: smol }
-  { guest: node3.mac.wales, ip-address: 192.168.1.23, host: wee  }
+  { guest: node1.mac.wales, ip-address: 192.168.10.21, host: dwt  }
+  { guest: node2.mac.wales, ip-address: 192.168.10.22, host: smol }
+  { guest: node3.mac.wales, ip-address: 192.168.10.23, host: wee  }
 ]
   
 $nodes | each {|node| build $node }

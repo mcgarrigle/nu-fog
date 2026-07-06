@@ -15,8 +15,8 @@ let base = {
   network: "network=bridge"
   network-device: enp1s0
   bootproto: static
-  ip-address: 192.168.1.20
-  gateway-address: 192.168.1.254
+  ip-address: ""
+  gateway-address: 192.168.10.1
   dns-server: 1.1.1.1
 
   user: $env.USER
